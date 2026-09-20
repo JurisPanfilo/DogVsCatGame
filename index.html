@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Собаки против Кошек: Битва Пород</title>
+    <style>
+        :root {
+            --bg-grad: linear-gradient(180deg, #0f172a 0%, #020617 100%);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; font-family: 'Segoe UI', Roboto, sans-serif; }
+        body { background: #020617; color: #fff; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+
+        #app {
+            width: 420px;
+            height: 820px;
+            background: var(--bg-grad);
+            border-radius: 28px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8), 0 0 0 2px rgba(255, 255, 255, 0.1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 24px; text-align: center; z-index: 20; background: var(--bg-grad); }
+        .hidden { display: none !important; }
+
+        .game-title {
+            font-size: 2rem;
+            font-weight: 900;
+            background: linear-gradient(180deg, #fef08a 0%, #f59e0b 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 12px;
+        }
+
+        .btn-3d {
+            background: linear-gradient(180deg, #22c55e 0%, #15803d 100%);
+            border: none;
+            color: #fff;
+            padding: 16px 40px;
+            border-radius: 16px;
+            font-weight: 800;
+            font-size: 1.2rem;
+            cursor: pointer;
+            box-shadow: 0 6px 0 #166534;
+        }
+        .btn-3d:active { transform: translateY(4px); box-shadow: 0 2px 0 #166534; }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 12px;
+            background: rgba(15, 23, 42, 0.95);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            z-index: 10;
+            height: 50px;
+        }
+        .badge-3d {
+            background: #1e293b;
+            padding: 6px 10px;
+            border-radius: 12px;
+            font-weight: 800;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            border: 1px solid #334155;
+            cursor: pointer;
+        }
+
+        #battle-arena {
+            height: 400px;
+            width: 100%;
+            position: relative;
+            background: #15803d;
+            background-image: radial-gradient(#166534 20%, transparent 20%);
+            background-size: 20px 20px;
+            overflow: hidden;
+            border-bottom: 4px solid #334155;
+            transition: background 0.5s ease;
+        }
+
+        /* Биомы / Фоны */
+        .biome-forest { background: #15803d !important; background-image: radial-gradient(#166534 20%, transparent 20%) !important; background-size: 20px 20px !important; }
+        .biome-desert { background: #d97706 !important; background-image: radial-gradient(#b45309 20%, transparent 20%) !important; background-size: 20px 20px !important; }
+        .biome-snow { background: #0284c7 !important; background-image: radial-gradient(#0369a1 20%, transparent 20%) !important; background-size: 20px 20px !important; }
+        .biome-volcano { background: #7f1d1d !important; background-image: radial-gradient(#991b1b 20%, transparent 20%) !important; background-size: 20px 20px !important; }
+
+        /* Прогресс-бар локации сбоку */
+        .map-progress-container {
+            position: absolute;
+            right: 8px;
+            top: 70px;
+            bottom: 70px;
+            width: 18px;
+            background: rgba(15, 23, 42, 0.7);
+            border: 2px solid #334155;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column-reverse;
+            padding: 2px;
+            z-index: 8;
+        }
+        .map-progress-fill {
+            width: 100%;
+            background: linear-gradient(0deg, #38bdf8 0%, #818cf8 100%);
+            border-radius: 6px;
+            transition: height 0.3s ease;
+        }
+        .map-progress-label {
+            position: absolute;
+            right: 24px;
+            top: 50%;
+            transform: translateY(-50%) rotate(-90deg);
+            transform-origin: right center;
+            font-size: 0.6rem;
+            font-weight: 800;
+            color: #cbd5e1;
+            white-space: nowrap;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            pointer-events: none;
+        }
+
+        .base-building {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 130px;
+            height: 45px;
+            background: #334155;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-weight: 900;
+            font-size: 0.75rem;
+            border: 2px solid #64748b;
+            z-index: 2;
+        }
+        .cats-base-build { top: 8px; border-color: #ef4444; background: #451a1a; }
+        .dogs-base-build { bottom: 8px; border-color: #22c55e; background: #14351e; }
+
+        .base-hp-bar { width: 90%; height: 8px; background: #000; border-radius: 4px; overflow: hidden; margin-top: 4px; }
+        .base-hp-fill { height: 100%; width: 100%; transition: width 0.1s; }
+        .cats-hp { background: #ef4444; }
+        .dogs-hp { background: #22c55e; }
+
+        .unit-3d {
+            position: absolute;
+            width: 42px;
+            height: 42px;
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.6rem;
+            z-index: 5;
+            transition: transform 0.1s linear;
+        }
+        .unit-dog-3d { background: #f59e0b; border: 2px solid #fff; box-shadow: 0 4px 6px rgba(0,0,0,0.4); }
+        .unit-cat-3d { background: #ef4444; border: 2px solid #fff; box-shadow: 0 4px 6px rgba(0,0,0,0.4); }
+
+        .hp-container {
+            position: absolute;
+            top: -18px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            pointer-events: none;
+        }
+        .hp-text {
+            font-size: 0.55rem;
+            font-weight: 900;
+            color: #fff;
+            text-shadow: 0 1px 2px #000;
+            white-space: nowrap;
+            margin-bottom: 1px;
+        }
+        .hp-bar { width: 36px; height: 4px; background: rgba(0,0,0,0.8); border-radius: 2px; overflow: hidden; }
+        .hp-fill { height: 100%; background: #22c55e; width: 100%; }
+
+        .bottom-panel {
+            flex: 1;
+            background: #0f172a;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .grid-3d { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; width: 230px; margin: 0 auto; }
+        .cell-3d { width: 70px; height: 70px; background: #1e293b; border-radius: 16px; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; cursor: pointer; border: 2px solid #334155; }
+        .cell-3d.selected { border-color: #fbbf24; background: #283548; }
+
+        .dog-name { font-size: 0.55rem; font-weight: 800; color: #94a3b8; margin-top: -2px; }
+        .star-tag { position: absolute; bottom: -6px; background: #090d16; padding: 1px 5px; border-radius: 6px; font-size: 0.55rem; font-weight: 900; }
+
+        .btn-start-battle { width: 100%; background: linear-gradient(180deg, #22c55e 0%, #166534 100%); border: none; color: #fff; padding: 10px 0; border-radius: 12px; font-weight: 900; font-size: 1rem; cursor: pointer; box-shadow: 0 4px 0 #14532d; }
+        .btn-start-battle.in-battle { background: linear-gradient(180deg, #64748b 0%, #334155 100%); box-shadow: 0 4px 0 #1e293b; }
+
+        .shop-3d { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+        .btn-chest-3d { background: #ea580c; border: none; border-radius: 10px; padding: 8px 4px; color: #fff; font-weight: 800; cursor: pointer; display: flex; flex-direction: column; align-items: center; font-size: 0.75rem; box-shadow: 0 3px 0 #9a3412; }
+        .btn-chest-3d:active { transform: translateY(2px); box-shadow: 0 1px 0 #9a3412; }
+        .btn-rare { background: #2563eb; box-shadow: 0 3px 0 #1e40af; }
+        .btn-epic { background: #9333ea; box-shadow: 0 3px 0 #6b21a8; }
+
+        /* Окно книжки / Энциклопедии */
+        .book-modal {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(2, 6, 23, 0.92);
+            z-index: 50;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
+        .book-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .book-title { font-size: 1.2rem; font-weight: 900; color: #fbbf24; }
+        .book-close { background: #ef4444; border: none; color: #fff; width: 30px; height: 30px; border-radius: 8px; font-weight: 900; cursor: pointer; }
+        .book-content {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            padding-right: 4px;
+        }
+        .book-section-title { font-size: 0.9rem; font-weight: 800; color: #38bdf8; text-align: left; border-bottom: 1px solid #334155; padding-bottom: 4px; }
+        .book-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+        .book-card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-align: left;
+        }
+        .book-card-icon { font-size: 1.8rem; }
+        .book-card-info { display: flex; flex-direction: column; }
+        .book-card-name { font-size: 0.75rem; font-weight: 800; color: #fff; }
+        .book-card-stat { font-size: 0.65rem; font-weight: 700; color: #94a3b8; }
+    </style>
+</head>
+<body>
+
+<div id="app">
+    <div id="menu-screen" class="screen">
+        <div class="game-title">🐶 БИТВА ПОРОД 🐱</div>
+        <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 20px;">
+            Собирайте армию собак и побеждайте волны кошек на разных локациях!
+        </p>
+        <button class="btn-3d" onclick="startGame()">В ИГРУ</button>
+    </div>
+
+    <!-- Модальное окно Энциклопедии (Книжки) -->
+    <div id="book-modal" class="book-modal hidden">
+        <div class="book-header">
+            <span class="book-title">📖 СПРАВОЧНИК ПОРОД</span>
+            <button class="book-close" onclick="toggleBook(false)">✕</button>
+        </div>
+        <div class="book-content">
+            <div class="book-section-title">🐱 ВРАГИ (КОШКИ)</div>
+            <div class="book-grid" id="cats-book-grid"></div>
+
+            <div class="book-section-title">🐶 СОЮЗНИКИ (СОБАКИ)</div>
+            <div class="book-grid" id="dogs-book-grid"></div>
+        </div>
+    </div>
+
+    <div id="game-screen" class="screen hidden" style="padding: 0;">
+        <div class="top-bar">
+            <button class="badge-3d" onclick="showMenu()">⏸</button>
+            <button class="badge-3d" onclick="toggleBook(true)">📖 Книга</button>
+            <div class="badge-3d">Ур. <span id="lvl-txt" style="color: #38bdf8;">1</span></div>
+            <div class="badge-3d">🐾 <span id="coins-txt" style="color: #fbbf24;">400</span></div>
+        </div>
+
+        <div id="battle-arena" class="biome-forest">
+            <!-- Индикатор прогресса карты сбоку -->
+            <div class="map-progress-container">
+                <div id="map-progress-fill" class="map-progress-fill"></div>
+                <div class="map-progress-label">До новой карты</div>
+            </div>
+
+            <div class="base-building cats-base-build">
+                <span>🐱 БАЗА КОШЕК</span>
+                <div class="base-hp-bar"><div id="cat-base-hp" class="base-hp-fill cats-hp"></div></div>
+            </div>
+
+            <div class="base-building dogs-base-build">
+                <span>🐶 ВАША БАЗА</span>
+                <div class="base-hp-bar"><div id="dog-base-hp" class="base-hp-fill dogs-hp"></div></div>
+            </div>
+        </div>
+
+        <div class="bottom-panel">
+            <button id="battle-btn" class="btn-start-battle" onclick="toggleBattlePhase()">⚔️ В БОЙ!</button>
+
+            <div class="grid-3d" id="grid"></div>
+
+            <div class="shop-3d">
+                <button class="btn-chest-3d" onclick="buyChest('common')">📦 Обычный<br>🐾 50</button>
+                <button class="btn-chest-3d btn-rare" onclick="buyChest('rare')">💙 Редкий<br>🐾 100</button>
+                <button class="btn-chest-3d btn-epic" onclick="buyChest('epic')">💜 Эпический<br>🐾 200</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const DOG_TYPES = {
+        taxa:      { name: 'Такса',     icon: '🐶', hp: 100, dmg: 16, speed: 0.55 },
+        mops:      { name: 'Мопс',     icon: '🐕', hp: 180, dmg: 12, speed: 0.40 },
+        poodle:    { name: 'Пудель',   icon: '🐩', hp: 90,  dmg: 22, speed: 0.65 },
+
+        corgi:     { name: 'Корги',    icon: '🦊', hp: 220, dmg: 30, speed: 0.58 },
+        husky:     { name: 'Хаски',    icon: '🐺', hp: 260, dmg: 40, speed: 0.70 },
+        shepherd:  { name: 'Овчарка',  icon: '🦮', hp: 350, dmg: 48, speed: 0.55 },
+
+        doberman:  { name: 'Доберман', icon: '🐕‍🦺', hp: 400, dmg: 75, speed: 0.75 },
+        stbernard: { name: 'Сенбернар',icon: '🐻', hp: 700, dmg: 55, speed: 0.42 },
+        mastiff:   { name: 'Мастиф',   icon: '🦁', hp: 550, dmg: 100, speed: 0.50 }
+    };
+
+    const CAT_TYPES = [
+        { name: 'Сфинкс',      icon: '😾', hp: 50,  dmg: 12, speed: 0.70, scale: 0.85 },
+        { name: 'Обычный кот', icon: '🐱', hp: 70,  dmg: 10, speed: 0.45, scale: 1.0 },
+        { name: 'Сиамский',    icon: '😼', hp: 85,  dmg: 22, speed: 0.50, scale: 1.1 },
+        { name: 'Мейн-кун',    icon: '🦁', hp: 170, dmg: 16, speed: 0.35, scale: 1.5 }
+    ];
+
+    const STARS = [
+        { label: '0★', mult: 1 },
+        { label: '★',  mult: 1.8 },
+        { label: '★★', mult: 3.0 }
+    ];
+
+    let coins = 400;
+    let level = 1;
+    let grid = new Array(9).fill(null);
+    let selectedCell = null;
+
+    let activeDogs = [];
+    let activeCats = [];
+    let spawnInterval = null;
+    let isBattlePhase = false;
+
+    let catBaseHp = 1000;
+    let maxCatBaseHp = 1000;
+    let dogBaseHp = 1000;
+    const maxDogBaseHp = 1000;
+
+    function startGame() {
+        document.getElementById('menu-screen').classList.add('hidden');
+        document.getElementById('game-screen').classList.remove('hidden');
+        renderGrid();
+        resetBases();
+        updateBiome();
+        updateUI();
+        renderBook();
+        requestAnimationFrame(gameLoop);
+    }
+
+    function showMenu() {
+        document.getElementById('game-screen').classList.add('hidden');
+        document.getElementById('menu-screen').classList.remove('hidden');
+        endBattlePhase();
+    }
+
+    function toggleBook(show) {
+        const bookModal = document.getElementById('book-modal');
+        if (show) {
+            renderBook();
+            bookModal.classList.remove('hidden');
+        } else {
+            bookModal.classList.add('hidden');
+        }
+    }
+
+    function renderBook() {
+        const catsGrid = document.getElementById('cats-book-grid');
+        const dogsGrid = document.getElementById('dogs-book-grid');
+        const lvlMult = 1 + (level - 1) * 0.22;
+
+        catsGrid.innerHTML = '';
+        CAT_TYPES.forEach(cat => {
+            const currentHp = Math.round(cat.hp * lvlMult);
+            const currentDmg = Math.round(cat.dmg * lvlMult);
+            catsGrid.innerHTML += `
+                <div class="book-card">
+                    <div class="book-card-icon">${cat.icon}</div>
+                    <div class="book-card-info">
+                        <div class="book-card-name">${cat.name}</div>
+                        <div class="book-card-stat">❤️ HP: ${currentHp}</div>
+                        <div class="book-card-stat">⚔️ Урон: ${currentDmg}</div>
+                    </div>
+                </div>
+            `;
+        });
+
+        dogsGrid.innerHTML = '';
+        Object.values(DOG_TYPES).forEach(dog => {
+            dogsGrid.innerHTML += `
+                <div class="book-card">
+                    <div class="book-card-icon">${dog.icon}</div>
+                    <div class="book-card-info">
+                        <div class="book-card-name">${dog.name}</div>
+                        <div class="book-card-stat">❤️ HP: ${dog.hp}</div>
+                        <div class="book-card-stat">⚔️ Урон: ${dog.dmg}</div>
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    function updateBiome() {
+        const arena = document.getElementById('battle-arena');
+        arena.className = ''; 
+
+        if (level <= 3) {
+            arena.classList.add('biome-forest');
+        } else if (level <= 6) {
+            arena.classList.add('biome-desert');
+        } else if (level <= 9) {
+            arena.classList.add('biome-snow');
+        } else {
+            arena.classList.add('biome-volcano');
+        }
+    }
+
+    function resetBases() {
+        maxCatBaseHp = 1000 + (level - 1) * 300;
+        catBaseHp = maxCatBaseHp;
+        dogBaseHp = maxDogBaseHp;
+    }
+
+    function toggleBattlePhase() {
+        if (isBattlePhase) return;
+        isBattlePhase = true;
+        
+        document.getElementById('battle-btn').innerText = '🔥 ИДЁТ СРАЖЕНИЕ!';
+        document.getElementById('battle-btn').classList.add('in-battle');
+
+        const spawnDelay = Math.max(1100, 2500 - (level - 1) * 200);
+        spawnInterval = setInterval(spawnCat, spawnDelay);
+    }
+
+    function endBattlePhase() {
+        isBattlePhase = false;
+        if (spawnInterval) clearInterval(spawnInterval);
+        document.getElementById('battle-btn').innerText = '⚔️ В БОЙ!';
+        document.getElementById('battle-btn').classList.remove('in-battle');
+
+        activeDogs.forEach(d => d.el.remove());
+        activeCats.forEach(c => c.el.remove());
+        activeDogs = [];
+        activeCats = [];
+
+        resetBases();
+        updateBiome();
+        updateUI();
+    }
+
+    function renderGrid() {
+        const gridEl = document.getElementById('grid');
+        gridEl.innerHTML = '';
+        for (let i = 0; i < 9; i++) {
+            const cell = document.createElement('div');
+            cell.className = `cell-3d ${selectedCell === i ? 'selected' : ''}`;
+            cell.onclick = () => handleCellClick(i);
+
+            if (grid[i]) {
+                const dog = grid[i];
+                const typeData = DOG_TYPES[dog.type];
+                cell.innerHTML = `
+                    <div style="font-size:1.8rem; line-height: 1;">${typeData.icon}</div>
+                    <div class="dog-name">${typeData.name}</div>
+                    <div class="star-tag">${STARS[dog.star].label}</div>
+                `;
+            }
+            gridEl.appendChild(cell);
+        }
+    }
+
+    function handleCellClick(index) {
+        if (!grid[index] && selectedCell === null) return;
+
+        if (selectedCell === null) {
+            selectedCell = index;
+        } else if (selectedCell === index) {
+            if (isBattlePhase) {
+                spawnDog(grid[index]);
+                grid[index] = null;
+            }
+            selectedCell = null;
+        } else {
+            const d1 = grid[selectedCell];
+            const d2 = grid[index];
+            if (d1 && d2 && d1.type === d2.type && d1.star === d2.star && d1.star < 2) {
+                grid[index] = { type: d1.type, star: d1.star + 1 };
+                grid[selectedCell] = null;
+            }
+            selectedCell = null;
+        }
+        renderGrid();
+    }
+
+    function buyChest(type) {
+        let cost = 50;
+        let pool = ['taxa', 'mops', 'poodle'];
+
+        if (type === 'rare') {
+            cost = 100;
+            pool = ['corgi', 'husky', 'shepherd'];
+        } else if (type === 'epic') {
+            cost = 200;
+            pool = ['doberman', 'stbernard', 'mastiff'];
+        }
+
+        if (coins < cost) return;
+        const emptyIdx = grid.findIndex(s => s === null);
+        if (emptyIdx === -1) return;
+
+        coins -= cost;
+        const randomDog = pool[Math.floor(Math.random() * pool.length)];
+        grid[emptyIdx] = { type: randomDog, star: 0 };
+
+        updateUI();
+        renderGrid();
+    }
+
+    function spawnDog(dogData) {
+        const arena = document.getElementById('battle-arena');
+        const type = DOG_TYPES[dogData.type];
+        const star = STARS[dogData.star];
+
+        const el = document.createElement('div');
+        el.className = 'unit-3d unit-dog-3d';
+        el.innerHTML = `
+            ${type.icon}
+            <div class="hp-container">
+                <span class="hp-text">0/0</span>
+                <div class="hp-bar"><div class="hp-fill"></div></div>
+            </div>
+        `;
+        arena.appendChild(el);
+
+        activeDogs.push({
+            el: el,
+            hpFill: el.querySelector('.hp-fill'),
+            hpText: el.querySelector('.hp-text'),
+            x: arena.clientWidth / 2 + (Math.random() * 80 - 40),
+            y: arena.clientHeight - 60,
+            hp: type.hp * star.mult,
+            maxHp: type.hp * star.mult,
+            dmg: type.dmg * star.mult,
+            speed: type.speed,
+            scale: 1.0
+        });
+    }
+
+    function spawnCat() {
+        const arena = document.getElementById('battle-arena');
+        const catType = CAT_TYPES[Math.floor(Math.random() * CAT_TYPES.length)];
+        const lvlMult = 1 + (level - 1) * 0.22;
+
+        const el = document.createElement('div');
+        el.className = 'unit-3d unit-cat-3d';
+        el.innerHTML = `
+            ${catType.icon}
+            <div class="hp-container">
+                <span class="hp-text">0/0</span>
+                <div class="hp-bar"><div class="hp-fill"></div></div>
+            </div>
+        `;
+        arena.appendChild(el);
+
+        const calculatedHp = Math.round(catType.hp * lvlMult);
+
+        activeCats.push({
+            el: el,
+            hpFill: el.querySelector('.hp-fill'),
+            hpText: el.querySelector('.hp-text'),
+            x: arena.clientWidth / 2 + (Math.random() * 80 - 40),
+            y: 60,
+            hp: calculatedHp,
+            maxHp: calculatedHp,
+            dmg: catType.dmg * lvlMult,
+            speed: catType.speed,
+            scale: catType.scale
+        });
+    }
+
+    function updateUI() {
+        document.getElementById('coins-txt').innerText = coins;
+        document.getElementById('lvl-txt').innerText = level;
+        document.getElementById('cat-base-hp').style.width = Math.max(0, (catBaseHp / maxCatBaseHp) * 100) + '%';
+        document.getElementById('dog-base-hp').style.width = Math.max(0, (dogBaseHp / maxDogBaseHp) * 100) + '%';
+
+        // Обновление полоски прогресса карты (каждые 3 уровня новая карта)
+        const currentStageInBiome = ((level - 1) % 3) + 1; 
+        const progressPercent = (currentStageInBiome / 3) * 100;
+        document.getElementById('map-progress-fill').style.height = progressPercent + '%';
+    }
+
+    function moveTowards(unit, targetX, targetY) {
+        const dx = targetX - unit.x;
+        const dy = targetY - unit.y;
+        const dist = Math.hypot(dx, dy);
+
+        if (dist > 5) {
+            unit.x += (dx / dist) * unit.speed;
+            unit.y += (dy / dist) * unit.speed;
+        }
+        return dist;
+    }
+
+    function gameLoop() {
+        const arena = document.getElementById('battle-arena');
+
+        if (isBattlePhase && arena) {
+            const catBaseTarget = { x: arena.clientWidth / 2, y: 30 };
+            const dogBaseTarget = { x: arena.clientWidth / 2, y: arena.clientHeight - 30 };
+
+            // ЛОГИКА СОБАК
+            activeDogs.forEach(dog => {
+                let nearestCat = null;
+                let minDist = 9999;
+
+                activeCats.forEach(cat => {
+                    const d = Math.hypot(cat.x - dog.x, cat.y - dog.y);
+                    if (d < minDist) {
+                        minDist = d;
+                        nearestCat = cat;
+                    }
+                });
+
+                if (nearestCat && minDist < 180) {
+                    if (minDist < 30) {
+                        nearestCat.hp -= dog.dmg * 0.03;
+                    } else {
+                        moveTowards(dog, nearestCat.x, nearestCat.y);
+                    }
+                } else {
+                    const distToBase = moveTowards(dog, catBaseTarget.x, catBaseTarget.y);
+                    if (distToBase < 40) {
+                        catBaseHp -= dog.dmg * 0.03;
+                    }
+                }
+
+                dog.el.style.left = dog.x + 'px';
+                dog.el.style.top = dog.y + 'px';
+                dog.el.style.transform = `translate(-50%, -50%) scale(${dog.scale})`;
+                dog.hpFill.style.width = Math.max(0, (dog.hp / dog.maxHp) * 100) + '%';
+                dog.hpText.innerText = `${Math.ceil(Math.max(0, dog.hp))}`;
+            });
+
+            // ЛОГИКА КОШЕК
+            activeCats.forEach(cat => {
+                let nearestDog = null;
+                let minDist = 9999;
+
+                activeDogs.forEach(dog => {
+                    const d = Math.hypot(dog.x - cat.x, dog.y - cat.y);
+                    if (d < minDist) {
+                        minDist = d;
+                        nearestDog = dog;
+                    }
+                });
+
+                if (nearestDog && minDist < 180) {
+                    if (minDist < 30) {
+                        nearestDog.hp -= cat.dmg * 0.03;
+                    } else {
+                        moveTowards(cat, nearestDog.x, nearestDog.y);
+                    }
+                } else {
+                    const distToBase = moveTowards(cat, dogBaseTarget.x, dogBaseTarget.y);
+                    if (distToBase < 40) {
+                        dogBaseHp -= cat.dmg * 0.03;
+                    }
+                }
+
+                cat.el.style.left = cat.x + 'px';
+                cat.el.style.top = cat.y + 'px';
+                cat.el.style.transform = `translate(-50%, -50%) scale(${cat.scale})`;
+                cat.hpFill.style.width = Math.max(0, (cat.hp / cat.maxHp) * 100) + '%';
+                cat.hpText.innerText = `${Math.ceil(Math.max(0, cat.hp))}`;
+            });
+
+            // Удаление погибших
+            activeDogs = activeDogs.filter(d => {
+                if (d.hp <= 0) { d.el.remove(); return false; }
+                return true;
+            });
+
+            activeCats = activeCats.filter(c => {
+                if (c.hp <= 0) {
+                    coins += 35;
+                    c.el.remove();
+                    return false;
+                }
+                return true;
+            });
+
+            // Победа/поражение
+            if (catBaseHp <= 0) {
+                const reward = 200 + level * 50;
+                alert(`🎉 ПОБЕДА! База кошек уровня ${level} разрушена!\nНаграда: +${reward} 🐾`);
+                coins += reward;
+                level++;
+                endBattlePhase();
+            } else if (dogBaseHp <= 0) {
+                alert(`💥 ПОРАЖЕНИЕ на уровне ${level}! Объедините больше собак для победы.`);
+                endBattlePhase();
+            }
+
+            updateUI();
+        }
+
+        requestAnimationFrame(gameLoop);
+    }
+</script>
+</body>
+</html>
