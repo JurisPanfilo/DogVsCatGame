@@ -2,403 +2,342 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Собаки против Кошек: Битва Пород</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Собаки против Кошек: Эпическая Битва</title>
     <style>
         :root {
             --bg-grad: linear-gradient(180deg, #0f172a 0%, #020617 100%);
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; font-family: 'Segoe UI', Roboto, sans-serif; }
-        body { background: #020617; color: #fff; display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow: hidden; }
-
-        #app {
-            width: 420px;
-            height: 840px;
-            background: var(--bg-grad);
-            border-radius: 28px;
-            overflow: hidden;
-            position: relative;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8), 0 0 0 2px rgba(255, 255, 255, 0.1);
-            display: flex;
-            flex-direction: column;
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
 
-        .screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 24px; text-align: center; z-index: 20; background: var(--bg-grad); }
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: #020617;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #app {
+            width: 100%;
+            max-width: 430px;
+            height: 100vh;
+            height: 100dvh;
+            background: var(--bg-grad);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        @media (min-height: 700px) and (min-width: 440px) {
+            #app {
+                height: 92vh;
+                border-radius: 28px;
+                box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8), 0 0 0 2px rgba(255, 255, 255, 0.1);
+            }
+        }
+
+        .screen {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            padding: 20px; text-align: center;
+            z-index: 20; background: var(--bg-grad);
+        }
         .hidden { display: none !important; }
 
         .game-title {
-            font-size: 2.2rem;
+            font-size: 1.8rem;
             font-weight: 900;
             background: linear-gradient(180deg, #fef08a 0%, #f59e0b 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             margin-bottom: 12px;
-            text-shadow: 0 4px 10px rgba(245, 158, 11, 0.3);
         }
 
         .btn-3d {
             background: linear-gradient(180deg, #22c55e 0%, #15803d 100%);
-            border: none;
-            color: #fff;
-            padding: 16px 40px;
-            border-radius: 16px;
-            font-weight: 800;
-            font-size: 1.2rem;
-            cursor: pointer;
-            box-shadow: 0 6px 0 #166534;
-            transition: all 0.1s ease;
+            border: none; color: #fff;
+            padding: 14px 36px; border-radius: 16px;
+            font-weight: 800; font-size: 1.1rem;
+            cursor: pointer; box-shadow: 0 5px 0 #166534;
         }
-        .btn-3d:active { transform: translateY(4px); box-shadow: 0 2px 0 #166534; }
+        .btn-3d:active { transform: translateY(3px); box-shadow: 0 2px 0 #166534; }
 
         .top-bar {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 10px 12px;
+            padding: 6px 8px;
             background: rgba(15, 23, 42, 0.95);
             border-bottom: 1px solid rgba(255,255,255,0.1);
             z-index: 10;
-            height: 52px;
+            height: 44px;
+            flex-shrink: 0;
         }
         .badge-3d {
             background: #1e293b;
-            padding: 6px 10px;
-            border-radius: 12px;
+            padding: 4px 6px;
+            border-radius: 10px;
             font-weight: 800;
-            font-size: 0.85rem;
+            font-size: 0.7rem;
             display: flex;
             align-items: center;
-            gap: 4px;
+            gap: 3px;
             border: 1px solid #334155;
             cursor: pointer;
         }
 
         #battle-arena {
-            height: 420px;
+            flex: 1;
             width: 100%;
+            min-height: 200px;
             position: relative;
             background: #15803d;
             overflow: hidden;
-            border-bottom: 4px solid #334155;
+            border-bottom: 3px solid #334155;
             transition: background 0.5s ease;
         }
 
-        /* */
-        /* Биомы / Фоны */
-        .biome-forest {
-            background: radial-gradient(circle at center, #16a34a 0%, #15803d 70%, #166534 100%) !important;
-        }
-        .biome-desert {
-            background: radial-gradient(circle at center, #f59e0b 0%, #d97706 70%, #b45309 100%) !important;
-        }
-        .biome-snow {
-            background: radial-gradient(circle at center, #38bdf8 0%, #0284c7 70%, #0369a1 100%) !important;
-        }
-        .biome-volcano {
-            background: radial-gradient(circle at center, #dc2626 0%, #991b1b 70%, #450a0a 100%) !important;
-        }
+        .biome-forest { background: #15803d !important; background-image: radial-gradient(#166534 20%, transparent 20%) !important; background-size: 20px 20px !important; }
+        .biome-desert { background: #d97706 !important; background-image: radial-gradient(#b45309 20%, transparent 20%) !important; background-size: 20px 20px !important; }
+        .biome-snow { background: #0284c7 !important; background-image: radial-gradient(#0369a1 20%, transparent 20%) !important; background-size: 20px 20px !important; }
+        .biome-volcano { background: #7f1d1d !important; background-image: radial-gradient(#991b1b 20%, transparent 20%) !important; background-size: 20px 20px !important; }
 
-        /* Декорации на арене */
-        .decoration {
+        .decor {
             position: absolute;
+            font-size: 1.4rem;
+            opacity: 0.85;
             pointer-events: none;
-            z-index: 3;
-            user-select: none;
-            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
-            animation: floatDecoration 3s ease-in-out infinite alternate;
+            z-index: 1;
         }
 
-        @keyframes floatDecoration {
-            0% { transform: translateY(0px) rotate(0deg); }
-            100% { transform: translateY(-3px) rotate(2deg); }
-        }
-
-        /* Прогресс-бар локации сбоку */
         .map-progress-container {
-            position: absolute;
-            right: 8px;
-            top: 70px;
-            bottom: 70px;
-            width: 18px;
-            background: rgba(15, 23, 42, 0.75);
-            border: 2px solid #334155;
-            border-radius: 10px;
-            display: flex;
-            flex-direction: column-reverse;
-            padding: 2px;
-            z-index: 8;
-            backdrop-filter: blur(4px);
+            position: absolute; right: 6px; top: 50px; bottom: 50px;
+            width: 14px; background: rgba(15, 23, 42, 0.7);
+            border: 1.5px solid #334155; border-radius: 8px;
+            display: flex; flex-direction: column-reverse; padding: 2px; z-index: 8;
         }
         .map-progress-fill {
-            width: 100%;
-            background: linear-gradient(0deg, #38bdf8 0%, #818cf8 100%);
-            border-radius: 6px;
-            transition: height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 0 8px rgba(56, 189, 248, 0.5);
+            width: 100%; background: linear-gradient(0deg, #38bdf8 0%, #818cf8 100%);
+            border-radius: 4px; transition: height 0.3s ease;
         }
         .map-progress-label {
-            position: absolute;
-            right: 24px;
-            top: 50%;
-            transform: translateY(-50%) rotate(-90deg);
-            transform-origin: right center;
-            font-size: 0.6rem;
-            font-weight: 800;
-            color: #cbd5e1;
-            white-space: nowrap;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            pointer-events: none;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+            position: absolute; right: 18px; top: 50%;
+            transform: translateY(-50%) rotate(-90deg); transform-origin: right center;
+            font-size: 0.5rem; font-weight: 800; color: #cbd5e1;
+            white-space: nowrap; text-transform: uppercase; pointer-events: none;
         }
 
         .base-building {
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 140px;
-            height: 46px;
-            background: #334155;
-            border-radius: 12px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            font-weight: 900;
-            font-size: 0.75rem;
-            border: 2px solid #64748b;
-            z-index: 6;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+            position: absolute; left: 50%; transform: translateX(-50%);
+            width: 130px; height: 38px; background: #334155;
+            border-radius: 10px; display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            font-weight: 900; font-size: 0.65rem; border: 2px solid #64748b; z-index: 2;
         }
-        .cats-base-build { top: 8px; border-color: #ef4444; background: #451a1a; }
-        .dogs-base-build { bottom: 8px; border-color: #22c55e; background: #14351e; }
+        .cats-base-build { top: 6px; border-color: #ef4444; background: #451a1a; }
+        .dogs-base-build { bottom: 6px; border-color: #22c55e; background: #14351e; }
 
-        .base-hp-bar { width: 90%; height: 8px; background: #000; border-radius: 4px; overflow: hidden; margin-top: 4px; }
+        .base-hp-bar { width: 90%; height: 6px; background: #000; border-radius: 3px; overflow: hidden; margin-top: 2px; }
         .base-hp-fill { height: 100%; width: 100%; transition: width 0.1s; }
         .cats-hp { background: #ef4444; }
         .dogs-hp { background: #22c55e; }
 
-        /* */
         .unit-3d {
-            position: absolute;
-            width: 42px;
-            height: 42px;
-            transform: translate(-50%, -50%);
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 1.6rem;
-            z-index: 5;
-            transition: transform 0.1s linear;
+            position: absolute; width: 36px; height: 36px;
+            transform: translate(-50%, -50%); border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 1.3rem; z-index: 5; transition: transform 0.1s linear;
         }
-        .unit-dog-3d { background: #f59e0b; border: 2px solid #fff; box-shadow: 0 4px 8px rgba(0,0,0,0.4); }
-        .unit-cat-3d { background: #ef4444; border: 2px solid #fff; box-shadow: 0 4px 8px rgba(0,0,0,0.4); }
+        .unit-dog-3d { background: #f59e0b; border: 2px solid #fff; box-shadow: 0 3px 5px rgba(0,0,0,0.4); }
+        .unit-cat-3d { background: #ef4444; border: 2px solid #fff; box-shadow: 0 3px 5px rgba(0,0,0,0.4); }
+        .unit-boss-3d { background: #7c3aed !important; border: 3px solid #fbbf24 !important; box-shadow: 0 0 15px #f59e0b !important; }
+
+        .items-container {
+            position: absolute; top: -12px;
+            display: flex; gap: 1px; justify-content: center; width: 100%;
+        }
+        .item-badge-mini {
+            font-size: 0.65rem; background: rgba(0,0,0,0.85);
+            border-radius: 50%; width: 14px; height: 14px;
+            display: flex; justify-content: center; align-items: center;
+            border: 0.5px solid rgba(255,255,255,0.3);
+        }
+
+        .boss-crown {
+            position: absolute; top: -20px; font-size: 1.2rem;
+            animation: bounceCrown 0.8s infinite alternate;
+        }
+        @keyframes bounceCrown {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-4px); }
+        }
+
+        .projectile {
+            position: absolute; font-size: 0.8rem; z-index: 6;
+            pointer-events: none; transform: translate(-50%, -50%);
+        }
 
         .hp-container {
-            position: absolute;
-            top: -20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            pointer-events: none;
+            position: absolute; top: -16px;
+            display: flex; flex-direction: column; align-items: center; pointer-events: none;
         }
-        .hp-text {
-            font-size: 0.58rem;
-            font-weight: 900;
-            color: #fff;
-            text-shadow: 0 1px 3px #000, 0 0 2px #000;
-            white-space: nowrap;
-            margin-bottom: 1px;
-        }
-        .hp-bar { width: 38px; height: 5px; background: rgba(0,0,0,0.8); border-radius: 3px; overflow: hidden; border: 1px solid rgba(255,255,255,0.2); }
+        .hp-text { font-size: 0.5rem; font-weight: 900; color: #fff; text-shadow: 0 1px 2px #000; white-space: nowrap; }
+        .hp-bar { width: 32px; height: 3.5px; background: rgba(0,0,0,0.8); border-radius: 2px; overflow: hidden; }
         .hp-fill { height: 100%; background: #22c55e; width: 100%; }
 
         .bottom-panel {
-            flex: 1;
             background: #0f172a;
-            padding: 10px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
+            padding: 8px 10px;
+            display: flex; flex-direction: column;
+            gap: 8px; flex-shrink: 0;
         }
 
-        .grid-3d { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; width: 230px; margin: 0 auto; }
-        .cell-3d { width: 70px; height: 70px; background: #1e293b; border-radius: 16px; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; cursor: pointer; border: 2px solid #334155; transition: all 0.15s ease; }
-        .cell-3d.selected { border-color: #fbbf24; background: #283548; transform: scale(1.05); }
-
-        .dog-name { font-size: 0.55rem; font-weight: 800; color: #94a3b8; margin-top: -2px; }
-        .star-tag { 
-            position: absolute; 
-            bottom: -6px; 
-            background: #090d16; 
-            padding: 1px 6px; 
-            border-radius: 6px; 
-            font-size: 0.55rem; 
-            font-weight: 900; 
-            color: #f59e0b;
-            border: 1px solid #334155;
+        .grid-3d {
+            display: grid; grid-template-columns: repeat(3, 1fr);
+            gap: 6px; width: 100%; max-width: 240px; margin: 0 auto;
         }
+        .cell-3d {
+            aspect-ratio: 1 / 1;
+            background: #1e293b; border-radius: 12px;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            position: relative; cursor: pointer; border: 2px solid #334155;
+        }
+        .cell-3d.selected { border-color: #fbbf24; background: #283548; }
 
-        .btn-start-battle { width: 100%; background: linear-gradient(180deg, #22c55e 0%, #166534 100%); border: none; color: #fff; padding: 10px 0; border-radius: 12px; font-weight: 900; font-size: 1rem; cursor: pointer; box-shadow: 0 4px 0 #14532d; }
-        .btn-start-battle.in-battle { background: linear-gradient(180deg, #64748b 0%, #334155 100%); box-shadow: 0 4px 0 #1e293b; }
+        .dog-name { font-size: 0.5rem; font-weight: 800; color: #94a3b8; margin-top: -2px; }
+        .star-tag { position: absolute; bottom: -5px; background: #090d16; padding: 1px 4px; border-radius: 4px; font-size: 0.5rem; font-weight: 900; color: #fbbf24; }
+        .grid-items-row { position: absolute; top: 2px; right: 2px; display: flex; gap: 1px; }
+
+        .btn-start-battle {
+            width: 100%; background: linear-gradient(180deg, #22c55e 0%, #166534 100%);
+            border: none; color: #fff; padding: 10px 0; border-radius: 10px;
+            font-weight: 900; font-size: 0.95rem; cursor: pointer; box-shadow: 0 3px 0 #14532d;
+        }
+        .btn-start-battle.in-battle { background: linear-gradient(180deg, #64748b 0%, #334155 100%); box-shadow: 0 3px 0 #1e293b; }
 
         .shop-3d { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
-        .btn-chest-3d { background: #ea580c; border: none; border-radius: 10px; padding: 8px 4px; color: #fff; font-weight: 800; cursor: pointer; display: flex; flex-direction: column; align-items: center; font-size: 0.75rem; box-shadow: 0 3px 0 #9a3412; }
+        .btn-chest-3d {
+            background: #ea580c; border: none; border-radius: 8px; padding: 6px 2px;
+            color: #fff; font-weight: 800; cursor: pointer; display: flex;
+            flex-direction: column; align-items: center; font-size: 0.65rem; box-shadow: 0 2.5px 0 #9a3412;
+        }
         .btn-chest-3d:active { transform: translateY(2px); box-shadow: 0 1px 0 #9a3412; }
-        .btn-rare { background: #2563eb; box-shadow: 0 3px 0 #1e40af; }
-        .btn-epic { background: #9333ea; box-shadow: 0 3px 0 #6b21a8; }
+        .btn-rare { background: #2563eb; box-shadow: 0 2.5px 0 #1e40af; }
+        .btn-epic { background: #9333ea; box-shadow: 0 2.5px 0 #6b21a8; }
 
-        /* */
-        /* Окно книжки / Энциклопедии */
-        .book-modal {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(2, 6, 23, 0.95);
-            z-index: 50;
-            display: flex;
-            flex-direction: column;
-            padding: 18px;
-            backdrop-filter: blur(8px);
+        .modal-view {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(2, 6, 23, 0.95); z-index: 50;
+            display: flex; flex-direction: column; padding: 16px;
         }
-        .book-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-            padding-bottom: 8px;
-            border-bottom: 2px solid #334155;
-        }
-        .book-title { font-size: 1.2rem; font-weight: 900; color: #fbbf24; }
-        .book-close { background: #ef4444; border: none; color: #fff; width: 32px; height: 32px; border-radius: 10px; font-weight: 900; cursor: pointer; }
-        .book-content {
-            flex: 1;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-            padding-right: 4px;
-        }
-        .book-section-title { font-size: 0.9rem; font-weight: 800; color: #38bdf8; text-align: left; border-bottom: 1px solid #334155; padding-bottom: 4px; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .modal-title { font-size: 1rem; font-weight: 900; color: #fbbf24; }
+        .modal-close { background: #ef4444; border: none; color: #fff; width: 28px; height: 28px; border-radius: 6px; font-weight: 900; cursor: pointer; }
+        .modal-content { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; padding-right: 2px; }
+        .section-title { font-size: 0.8rem; font-weight: 800; color: #38bdf8; text-align: left; border-bottom: 1px solid #334155; padding-bottom: 2px; }
         
-        .stars-info-box {
-            background: #1e293b;
-            border: 1px solid #334155;
-            border-radius: 12px;
-            padding: 10px;
-            font-size: 0.72rem;
-            text-align: left;
-            color: #cbd5e1;
-            line-height: 1.4;
-        }
-        .stars-info-box strong { color: #f59e0b; }
+        .book-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
+        .book-card { background: #1e293b; border: 1px solid #334155; border-radius: 10px; padding: 6px; display: flex; flex-direction: column; gap: 4px; text-align: left; }
+        .book-card-header { display: flex; align-items: center; gap: 6px; }
+        .book-card-icon { font-size: 1.4rem; }
+        .book-card-name { font-size: 0.7rem; font-weight: 800; color: #fff; }
+        .book-card-stat { font-size: 0.6rem; font-weight: 700; color: #94a3b8; }
+        .stars-table { width: 100%; font-size: 0.55rem; border-collapse: collapse; margin-top: 2px; }
+        .stars-table td { padding: 1px 2px; border-top: 1px solid #334155; color: #cbd5e1; }
+        .stars-table tr td:first-child { color: #fbbf24; font-weight: 800; }
 
-        .book-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
-        .book-card-dog {
-            background: #1e293b;
-            border: 1px solid #334155;
-            border-radius: 12px;
-            padding: 10px;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            text-align: left;
+        .equip-card {
+            background: #1e293b; border: 1px solid #334155; border-radius: 12px;
+            padding: 10px; display: flex; justify-content: space-between; align-items: center; text-align: left;
         }
-        .book-card-head {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-weight: 900;
-            font-size: 0.9rem;
-            color: #fff;
+        .equip-info { display: flex; align-items: center; gap: 10px; }
+        .equip-icon { font-size: 1.8rem; background: #0f172a; padding: 6px; border-radius: 10px; border: 1px solid #334155; }
+        .equip-details { display: flex; flex-direction: column; gap: 2px; }
+        .equip-name { font-size: 0.8rem; font-weight: 800; color: #fff; }
+        .equip-desc { font-size: 0.65rem; color: #94a3b8; max-width: 170px; }
+        .btn-buy-item {
+            background: linear-gradient(180deg, #eab308 0%, #ca8a04 100%);
+            border: none; color: #fff; padding: 8px 12px; border-radius: 8px;
+            font-weight: 800; font-size: 0.75rem; cursor: pointer; box-shadow: 0 2px 0 #a16207;
+            white-space: nowrap;
         }
-        .stars-stats-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 4px;
-            background: #0f172a;
-            padding: 6px;
-            border-radius: 8px;
-        }
-        .star-stat-col {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            font-size: 0.62rem;
-            border-right: 1px solid #1e293b;
-        }
-        .star-stat-col:last-child { border-right: none; }
-        .star-stat-title { font-weight: 900; color: #f59e0b; margin-bottom: 2px; }
-        .star-stat-val { color: #94a3b8; font-weight: 700; }
-
-        .book-grid-cats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
-        .book-card-cat {
-            background: #1e293b;
-            border: 1px solid #334155;
-            border-radius: 12px;
-            padding: 8px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            text-align: left;
-        }
+        .btn-buy-item:active { transform: translateY(2px); box-shadow: none; }
     </style>
 </head>
 <body>
 
 <div id="app">
-    <!-- Главное меню -->
     <div id="menu-screen" class="screen">
         <div class="game-title">🐶 БИТВА ПОРОД 🐱</div>
-        <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 24px;">
-            Собирайте и прокачивайте армию собак до 3★, чтобы победить волны кошек в разных биомах!
+        <p style="color: #94a3b8; font-size: 0.8rem; margin-bottom: 16px;">
+            Снаряжайте до 3-х предметов, побеждайте экипированных котов и сокрушите Босса с короной!
         </p>
         <button class="btn-3d" onclick="startGame()">В ИГРУ</button>
     </div>
 
-    <!-- Модальное окно Справочника (Книжки) -->
-    <div id="book-modal" class="book-modal hidden">
-        <div class="book-header">
-            <span class="book-title">📖 СПРАВОЧНИК И ЗВЕЗДЫ</span>
-            <button class="book-close" onclick="toggleBook(false)">✕</button>
+    <!-- МОДАЛЬНОЕ ОКНО: СПРАВОЧНИК -->
+    <div id="book-modal" class="modal-view hidden">
+        <div class="modal-header">
+            <span class="modal-title">📖 СПРАВОЧНИК ПОРОД</span>
+            <button class="modal-close" onclick="toggleModal('book-modal', false)">✕</button>
         </div>
-        <div class="book-content">
-            <div class="stars-info-box">
-                📌 <strong>Система Звёзд (Прокачка):</strong><br>
-                Объединяйте 2 одинаковые собаки одной звездности на сетке!<br>
-                • <strong>0★</strong>: Базовые характеристики (100%)<br>
-                • <strong>1★</strong>: <strong>x1.8</strong> HP и Урон (+80%)<br>
-                • <strong>2★</strong>: <strong>x3.0</strong> HP и Урон (+200%)<br>
-                • <strong>3★</strong> (МАКС): <strong>x5.0</strong> HP и Урон (+400%)
+        <div class="modal-content">
+            <div class="section-title">🐱 ВРАГИ (КОШКИ)</div>
+            <div class="book-grid" id="cats-book-grid"></div>
+
+            <div class="section-title">🐶 СОЮЗНИКИ И ЗВЁЗДЫ</div>
+            <div style="font-size: 0.6rem; color: #94a3b8; text-align: left; margin-top: -6px;">
+                0★ (x1.0) | 1★ (x1.8) | 2★ (x3.0) | 3★ (x5.0)
             </div>
-
-            <div class="book-section-title">🐶 СОБАКИ (ПРОКАЧКА ХАРАКТЕРИСТИК)</div>
             <div class="book-grid" id="dogs-book-grid"></div>
-
-            <div class="book-section-title">🐱 ВРАГИ (КОШКИ - МАСШТАБИРУЮТСЯ С УРОВНЕМ)</div>
-            <div class="book-grid-cats" id="cats-book-grid"></div>
         </div>
     </div>
 
-    <!-- Игровой экран -->
+    <!-- МОДАЛЬНОЕ ОКНО: МАГАЗИН СНАРЯЖЕНИЯ -->
+    <div id="shop-modal" class="modal-view hidden">
+        <div class="modal-header">
+            <span class="modal-title">🛍️ МАГАЗИН СНАРЯЖЕНИЯ</span>
+            <button class="modal-close" onclick="toggleModal('shop-modal', false)">✕</button>
+        </div>
+        <div style="font-size: 0.7rem; color: #cbd5e1; margin-bottom: 8px; text-align: left;">
+            Выберите собаку на поле. Вы можете надеть до <b style="color:#fbbf24;">3-х предметов</b>!
+        </div>
+        <div class="modal-content" id="equipment-list"></div>
+    </div>
+
+    <!-- ИГРОВОЙ ЭКРАН -->
     <div id="game-screen" class="screen hidden" style="padding: 0;">
         <div class="top-bar">
             <button class="badge-3d" onclick="showMenu()">⏸</button>
-            <button class="badge-3d" onclick="toggleBook(true)">📖 Книга</button>
+            <button class="badge-3d" onclick="toggleModal('book-modal', true)">📖 Книга</button>
+            <button class="badge-3d" style="background: #854d0e; border-color: #facc15;" onclick="openShopModal()">🛍️ Магазин</button>
             <div class="badge-3d">Ур. <span id="lvl-txt" style="color: #38bdf8;">1</span></div>
             <div class="badge-3d">🐾 <span id="coins-txt" style="color: #fbbf24;">400</span></div>
         </div>
 
         <div id="battle-arena" class="biome-forest">
-            <!-- Индикатор прогресса карты сбоку -->
             <div class="map-progress-container">
                 <div id="map-progress-fill" class="map-progress-fill"></div>
                 <div class="map-progress-label">До новой карты</div>
             </div>
-
-            <!-- Контейнер для декораций -->
-            <div id="decorations-layer"></div>
 
             <div class="base-building cats-base-build">
                 <span>🐱 БАЗА КОШЕК</span>
@@ -440,14 +379,64 @@
         mastiff:   { name: 'Мастиф',   icon: '🦁', hp: 550, dmg: 100, speed: 0.50 }
     };
 
+    // Расширенный список пород кошек
     const CAT_TYPES = [
         { name: 'Сфинкс',      icon: '😾', hp: 50,  dmg: 12, speed: 0.70, scale: 0.85 },
-        { name: 'Обычный кот', icon: '🐱', hp: 70,  dmg: 10, speed: 0.45, scale: 1.0 },
+        { name: 'Дворовый',    icon: '🐱', hp: 70,  dmg: 10, speed: 0.45, scale: 1.0 },
         { name: 'Сиамский',    icon: '😼', hp: 85,  dmg: 22, speed: 0.50, scale: 1.1 },
-        { name: 'Мейн-кун',    icon: '🦁', hp: 170, dmg: 16, speed: 0.35, scale: 1.5 }
+        { name: 'Персидский',  icon: '😾', hp: 120, dmg: 14, speed: 0.38, scale: 1.25 },
+        { name: 'Британский',  icon: '😽', hp: 140, dmg: 18, speed: 0.42, scale: 1.3 },
+        { name: 'Мейн-кун',    icon: '🦁', hp: 180, dmg: 22, speed: 0.35, scale: 1.4 },
+        { name: 'Камышовый',   icon: '🐆', hp: 220, dmg: 32, speed: 0.60, scale: 1.45 },
+        { name: 'Рысь',        icon: '🐅', hp: 280, dmg: 45, speed: 0.65, scale: 1.5 }
     ];
 
-    // Уровни звезд: 0★, 1★, 2★, 3★ (Максимум 3 звезды)
+    const ITEMS = {
+        bow: {
+            id: 'bow',
+            name: '🏹 Охотничий Лук',
+            icon: '🏹',
+            cost: 150,
+            desc: 'Дальний бой! Атакует стрелами с дистанции.',
+            range: 160
+        },
+        hammer: {
+            id: 'hammer',
+            name: '🔨 Кувалда Силы',
+            icon: '🔨',
+            cost: 120,
+            desc: '+50% к базовому урону.'
+        },
+        armor: {
+            id: 'armor',
+            name: '🛡️ Тяжёлая Броня',
+            icon: '🛡️',
+            cost: 100,
+            desc: '+100 к максимальному HP.'
+        },
+        boots: {
+            id: 'boots',
+            name: '⚡ Скороходы',
+            icon: '⚡',
+            cost: 80,
+            desc: '+50% к скорости передвижения.'
+        },
+        vampire: {
+            id: 'vampire',
+            name: '🩸 Клык Вампира',
+            icon: '🩸',
+            cost: 130,
+            desc: 'Восстанавливает 15% HP от нанесённого урона.'
+        },
+        bomb: {
+            id: 'bomb',
+            name: '💣 Пояс Подорвателя',
+            icon: '💣',
+            cost: 110,
+            desc: 'При смерти взрывается и наносит 150 урона всем врагам!'
+        }
+    };
+
     const STARS = [
         { label: '0★', mult: 1.0 },
         { label: '1★', mult: 1.8 },
@@ -455,32 +444,11 @@
         { label: '3★', mult: 5.0 }
     ];
 
-    // Наборы декораций для каждого биома
-    const BIOME_DECORATIONS = {
-        forest: [
-            { icon: '🌲', size: '2rem', positions: [{x: 15, y: 80}, {x: 82, y: 120}, {x: 18, y: 310}] },
-            { icon: '🌳', size: '2.2rem', positions: [{x: 80, y: 280}, {x: 12, y: 200}] },
-            { icon: '🍄', size: '1.2rem', positions: [{x: 25, y: 140}, {x: 75, y: 220}] },
-            { icon: '🪨', size: '1.4rem', positions: [{x: 82, y: 180}, {x: 20, y: 260}] }
-        ],
-        desert: [
-            { icon: '🌵', size: '2.2rem', positions: [{x: 15, y: 90}, {x: 82, y: 270}, {x: 18, y: 310}] },
-            { icon: '🏜️', size: '2.5rem', positions: [{x: 78, y: 120}] },
-            { icon: '💀', size: '1.3rem', positions: [{x: 20, y: 210}, {x: 80, y: 200}] },
-            { icon: '🛖', size: '1.8rem', positions: [{x: 12, y: 150}] }
-        ],
-        snow: [
-            { icon: '🏔️', size: '2.5rem', positions: [{x: 12, y: 80}, {x: 80, y: 110}] },
-            { icon: '🎄', size: '2.2rem', positions: [{x: 15, y: 280}, {x: 82, y: 260}] },
-            { icon: '🧊', size: '1.5rem', positions: [{x: 20, y: 180}, {x: 78, y: 200}] },
-            { icon: '☃️', size: '1.8rem', positions: [{x: 18, y: 330}] }
-        ],
-        volcano: [
-            { icon: '🌋', size: '2.6rem', positions: [{x: 15, y: 80}] },
-            { icon: '🔥', size: '1.6rem', positions: [{x: 82, y: 130}, {x: 18, y: 290}] },
-            { icon: '🪨', size: '1.5rem', positions: [{x: 80, y: 270}, {x: 12, y: 200}] },
-            { icon: '💥', size: '1.3rem', positions: [{x: 22, y: 160}, {x: 78, y: 210}] }
-        ]
+    const BIOME_DECORS = {
+        forest: ['🌲', '🌳', '🍄', '🌿', '🌲'],
+        desert: ['🌵', '🏜️', '🪨', '🌵', '🏜️'],
+        snow:   ['❄️', '🌲', '🧊', '❄️', '🌲'],
+        volcano:['🔥', '🪨', '🌋', '🔥', '🪨']
     };
 
     let coins = 400;
@@ -490,15 +458,16 @@
 
     let activeDogs = [];
     let activeCats = [];
+    let activeProjectiles = [];
     let spawnInterval = null;
     let isBattlePhase = false;
+    let bossSpawned = false;
 
     let catBaseHp = 1000;
     let maxCatBaseHp = 1000;
     let dogBaseHp = 1000;
     const maxDogBaseHp = 1000;
 
-    /* */
     function startGame() {
         document.getElementById('menu-screen').classList.add('hidden');
         document.getElementById('game-screen').classList.remove('hidden');
@@ -507,6 +476,7 @@
         updateBiome();
         updateUI();
         renderBook();
+        renderEquipmentShop();
         requestAnimationFrame(gameLoop);
     }
 
@@ -516,101 +486,141 @@
         endBattlePhase();
     }
 
-    function toggleBook(show) {
-        const bookModal = document.getElementById('book-modal');
+    function toggleModal(id, show) {
+        const modal = document.getElementById(id);
         if (show) {
-            renderBook();
-            bookModal.classList.remove('hidden');
+            if (id === 'book-modal') renderBook();
+            if (id === 'shop-modal') renderEquipmentShop();
+            modal.classList.remove('hidden');
         } else {
-            bookModal.classList.add('hidden');
+            modal.classList.add('hidden');
         }
     }
 
-    function renderBook() {
-        const dogsGrid = document.getElementById('dogs-book-grid');
-        const catsGrid = document.getElementById('cats-book-grid');
-        const lvlMult = 1 + (level - 1) * 0.22;
+    function openShopModal() {
+        if (selectedCell === null || !grid[selectedCell]) {
+            alert("Сначала выберите собаку в сетке, чтобы снарядить её!");
+            return;
+        }
+        toggleModal('shop-modal', true);
+    }
 
-        dogsGrid.innerHTML = '';
-        Object.values(DOG_TYPES).forEach(dog => {
-            let starsColsHtml = '';
-            STARS.forEach((star) => {
-                const h = Math.round(dog.hp * star.mult);
-                const d = Math.round(dog.dmg * star.mult);
-                starsColsHtml += `
-                    <div class="star-stat-col">
-                        <span class="star-stat-title">${star.label}</span>
-                        <span class="star-stat-val">❤️ ${h}</span>
-                        <span class="star-stat-val">⚔️ ${d}</span>
-                    </div>
-                `;
-            });
+    function renderEquipmentShop() {
+        const container = document.getElementById('equipment-list');
+        container.innerHTML = '';
 
-            dogsGrid.innerHTML += `
-                <div class="book-card-dog">
-                    <div class="book-card-head">
-                        <span style="font-size: 1.5rem;">${dog.icon}</span>
-                        <span>${dog.name}</span>
+        Object.values(ITEMS).forEach(item => {
+            container.innerHTML += `
+                <div class="equip-card">
+                    <div class="equip-info">
+                        <div class="equip-icon">${item.icon}</div>
+                        <div class="equip-details">
+                            <div class="equip-name">${item.name}</div>
+                            <div class="equip-desc">${item.desc}</div>
+                        </div>
                     </div>
-                    <div class="stars-stats-grid">
-                        ${starsColsHtml}
-                    </div>
+                    <button class="btn-buy-item" onclick="buyEquipment('${item.id}')">🐾 ${item.cost}</button>
                 </div>
             `;
         });
+    }
+
+    function buyEquipment(itemId) {
+        if (selectedCell === null || !grid[selectedCell]) {
+            alert("Выберите собаку для покупки предмета!");
+            return;
+        }
+
+        const dog = grid[selectedCell];
+        if (!dog.items) dog.items = [];
+
+        if (dog.items.length >= 3) {
+            alert("Максимум 3 предмета на одной собаке!");
+            return;
+        }
+
+        const item = ITEMS[itemId];
+        if (coins < item.cost) {
+            alert("Недостаточно лапок (монет)!");
+            return;
+        }
+
+        coins -= item.cost;
+        dog.items.push(itemId);
+        
+        updateUI();
+        renderGrid();
+    }
+
+    function renderBook() {
+        const catsGrid = document.getElementById('cats-book-grid');
+        const dogsGrid = document.getElementById('dogs-book-grid');
+        const lvlMult = 1 + (level - 1) * 0.22;
 
         catsGrid.innerHTML = '';
         CAT_TYPES.forEach(cat => {
             const currentHp = Math.round(cat.hp * lvlMult);
             const currentDmg = Math.round(cat.dmg * lvlMult);
             catsGrid.innerHTML += `
-                <div class="book-card-cat">
-                    <div style="font-size: 1.8rem;">${cat.icon}</div>
-                    <div style="display:flex; flex-direction:column;">
-                        <div style="font-size: 0.78rem; font-weight: 800; color: #fff;">${cat.name}</div>
-                        <div style="font-size: 0.65rem; font-weight: 700; color: #94a3b8;">❤️ HP: ${currentHp}</div>
-                        <div style="font-size: 0.65rem; font-weight: 700; color: #94a3b8;">⚔️ Урон: ${currentDmg}</div>
+                <div class="book-card">
+                    <div class="book-card-header">
+                        <span class="book-card-icon">${cat.icon}</span>
+                        <span class="book-card-name">${cat.name}</span>
                     </div>
+                    <div class="book-card-stat">❤️ HP: ${currentHp}</div>
+                    <div class="book-card-stat">⚔️ Урон: ${currentDmg}</div>
+                </div>
+            `;
+        });
+
+        dogsGrid.innerHTML = '';
+        Object.values(DOG_TYPES).forEach(dog => {
+            let tableRows = '';
+            STARS.forEach((s) => {
+                const h = Math.round(dog.hp * s.mult);
+                const d = Math.round(dog.dmg * s.mult);
+                tableRows += `<tr><td>${s.label}</td><td>❤️ ${h}</td><td>⚔️ ${d}</td></tr>`;
+            });
+
+            dogsGrid.innerHTML += `
+                <div class="book-card">
+                    <div class="book-card-header">
+                        <span class="book-card-icon">${dog.icon}</span>
+                        <span class="book-card-name">${dog.name}</span>
+                    </div>
+                    <table class="stars-table">${tableRows}</table>
                 </div>
             `;
         });
     }
 
-    /* */
     function updateBiome() {
         const arena = document.getElementById('battle-arena');
-        const decorLayer = document.getElementById('decorations-layer');
         arena.className = ''; 
-        decorLayer.innerHTML = '';
-
+        
         let key = 'forest';
-        if (level <= 3) {
-            arena.classList.add('biome-forest');
-            key = 'forest';
-        } else if (level <= 6) {
-            arena.classList.add('biome-desert');
-            key = 'desert';
-        } else if (level <= 9) {
-            arena.classList.add('biome-snow');
-            key = 'snow';
-        } else {
-            arena.classList.add('biome-volcano');
-            key = 'volcano';
-        }
+        if (level <= 3) key = 'forest';
+        else if (level <= 6) key = 'desert';
+        else if (level <= 9) key = 'snow';
+        else key = 'volcano';
 
-        // Спавн тематических декораций по бокам
-        const decorList = BIOME_DECORATIONS[key];
-        decorList.forEach(item => {
-            item.positions.forEach(pos => {
-                const d = document.createElement('div');
-                d.className = 'decoration';
-                d.innerText = item.icon;
-                d.style.fontSize = item.size;
-                d.style.left = pos.x + '%';
-                d.style.top = pos.y + 'px';
-                d.style.animationDelay = (Math.random() * 2) + 's';
-                decorLayer.appendChild(d);
-            });
+        arena.classList.add(`biome-${key}`);
+
+        document.querySelectorAll('.decor').forEach(d => d.remove());
+        const decors = BIOME_DECORS[key];
+        const positions = [
+            { x: '8%', y: '20%' }, { x: '82%', y: '18%' },
+            { x: '10%', y: '50%' }, { x: '84%', y: '55%' },
+            { x: '12%', y: '80%' }, { x: '80%', y: '82%' }
+        ];
+
+        positions.forEach((pos, idx) => {
+            const dec = document.createElement('div');
+            dec.className = 'decor';
+            dec.innerText = decors[idx % decors.length];
+            dec.style.left = pos.x;
+            dec.style.top = pos.y;
+            arena.appendChild(dec);
         });
     }
 
@@ -618,6 +628,7 @@
         maxCatBaseHp = 1000 + (level - 1) * 300;
         catBaseHp = maxCatBaseHp;
         dogBaseHp = maxDogBaseHp;
+        bossSpawned = false;
     }
 
     function toggleBattlePhase() {
@@ -627,7 +638,7 @@
         document.getElementById('battle-btn').innerText = '🔥 ИДЁТ СРАЖЕНИЕ!';
         document.getElementById('battle-btn').classList.add('in-battle');
 
-        const spawnDelay = Math.max(1100, 2500 - (level - 1) * 200);
+        const spawnDelay = Math.max(1000, 2400 - (level - 1) * 180);
         spawnInterval = setInterval(spawnCat, spawnDelay);
     }
 
@@ -639,15 +650,16 @@
 
         activeDogs.forEach(d => d.el.remove());
         activeCats.forEach(c => c.el.remove());
+        activeProjectiles.forEach(p => p.el.remove());
         activeDogs = [];
         activeCats = [];
+        activeProjectiles = [];
 
         resetBases();
         updateBiome();
         updateUI();
     }
 
-    /* */
     function renderGrid() {
         const gridEl = document.getElementById('grid');
         gridEl.innerHTML = '';
@@ -659,10 +671,19 @@
             if (grid[i]) {
                 const dog = grid[i];
                 const typeData = DOG_TYPES[dog.type];
+                
+                let itemsRowHtml = '';
+                if (dog.items && dog.items.length > 0) {
+                    itemsRowHtml = '<div class="grid-items-row">' + 
+                        dog.items.map(it => `<span style="font-size:0.6rem;">${ITEMS[it].icon}</span>`).join('') + 
+                    '</div>';
+                }
+
                 cell.innerHTML = `
-                    <div style="font-size:1.8rem; line-height: 1;">${typeData.icon}</div>
+                    <div style="font-size:1.5rem; line-height: 1;">${typeData.icon}</div>
                     <div class="dog-name">${typeData.name}</div>
                     <div class="star-tag">${STARS[dog.star].label}</div>
+                    ${itemsRowHtml}
                 `;
             }
             gridEl.appendChild(cell);
@@ -683,9 +704,10 @@
         } else {
             const d1 = grid[selectedCell];
             const d2 = grid[index];
-            // Объединение: одинаковый тип, одинаковая звезда и МЕНЬШЕ 3 звезд (максимум 3★ = индекс 3)
             if (d1 && d2 && d1.type === d2.type && d1.star === d2.star && d1.star < 3) {
-                grid[index] = { type: d1.type, star: d1.star + 1 };
+                // Объединение сохраняет уникальные предметы с обеих собак (до 3 шт)
+                const mergedItems = Array.from(new Set([...(d1.items || []), ...(d2.items || [])])).slice(0, 3);
+                grid[index] = { type: d1.type, star: d1.star + 1, items: mergedItems };
                 grid[selectedCell] = null;
             }
             selectedCell = null;
@@ -711,54 +733,110 @@
 
         coins -= cost;
         const randomDog = pool[Math.floor(Math.random() * pool.length)];
-        grid[emptyIdx] = { type: randomDog, star: 0 };
+        grid[emptyIdx] = { type: randomDog, star: 0, items: [] };
 
         updateUI();
         renderGrid();
     }
 
-    /* */
     function spawnDog(dogData) {
         const arena = document.getElementById('battle-arena');
         const type = DOG_TYPES[dogData.type];
         const star = STARS[dogData.star];
 
+        let hp = type.hp * star.mult;
+        let dmg = type.dmg * star.mult;
+        let speed = type.speed;
+        let items = dogData.items || [];
+
+        // Расчёт эффектов снаряжения
+        if (items.includes('armor')) hp += 100;
+        if (items.includes('hammer')) dmg *= 1.5;
+        if (items.includes('boots')) speed *= 1.5;
+
         const el = document.createElement('div');
         el.className = 'unit-3d unit-dog-3d';
+        
+        let itemsBadges = '';
+        if (items.length > 0) {
+            itemsBadges = `<div class="items-container">${items.map(it => `<div class="item-badge-mini">${ITEMS[it].icon}</div>`).join('')}</div>`;
+        }
+
         el.innerHTML = `
             ${type.icon}
+            ${itemsBadges}
             <div class="hp-container">
                 <span class="hp-text">0/0</span>
                 <div class="hp-bar"><div class="hp-fill"></div></div>
             </div>
         `;
         arena.appendChild(el);
-
-        const calculatedHp = type.hp * star.mult;
 
         activeDogs.push({
             el: el,
             hpFill: el.querySelector('.hp-fill'),
             hpText: el.querySelector('.hp-text'),
-            x: arena.clientWidth / 2 + (Math.random() * 80 - 40),
-            y: arena.clientHeight - 60,
-            hp: calculatedHp,
-            maxHp: calculatedHp,
-            dmg: type.dmg * star.mult,
-            speed: type.speed,
-            scale: 1.0 + dogData.star * 0.12
+            x: arena.clientWidth / 2 + (Math.random() * 60 - 30),
+            y: arena.clientHeight - 50,
+            hp: hp,
+            maxHp: hp,
+            dmg: dmg,
+            speed: speed,
+            scale: 0.9 + dogData.star * 0.15,
+            items: items,
+            lastAttackTime: 0
         });
     }
 
-    function spawnCat() {
+    function spawnCat(isBoss = false) {
         const arena = document.getElementById('battle-arena');
         const catType = CAT_TYPES[Math.floor(Math.random() * CAT_TYPES.length)];
         const lvlMult = 1 + (level - 1) * 0.22;
 
+        let items = [];
+        // Обычные коты получают предметы с вероятностью, растущей от уровня
+        if (!isBoss) {
+            const itemKeys = Object.keys(ITEMS);
+            const equipChance = Math.min(0.6, 0.1 + level * 0.05);
+            if (Math.random() < equipChance) {
+                const count = Math.random() < 0.25 ? 2 : 1;
+                while (items.length < count) {
+                    const randItem = itemKeys[Math.floor(Math.random() * itemKeys.length)];
+                    if (!items.includes(randItem)) items.push(randItem);
+                }
+            }
+        } else {
+            // Босс гарантированно получает 2-3 предмета снаряжения
+            const itemKeys = Object.keys(ITEMS);
+            const count = Math.random() < 0.5 ? 3 : 2;
+            while (items.length < count) {
+                const randItem = itemKeys[Math.floor(Math.random() * itemKeys.length)];
+                if (!items.includes(randItem)) items.push(randItem);
+            }
+        }
+
+        let hp = (catType.hp * lvlMult) * (isBoss ? 4.5 : 1.0);
+        let dmg = (catType.dmg * lvlMult) * (isBoss ? 1.8 : 1.0);
+        let speed = catType.speed;
+
+        if (items.includes('armor')) hp += 100;
+        if (items.includes('hammer')) dmg *= 1.5;
+        if (items.includes('boots')) speed *= 1.5;
+
         const el = document.createElement('div');
-        el.className = 'unit-3d unit-cat-3d';
+        el.className = `unit-3d unit-cat-3d ${isBoss ? 'unit-boss-3d' : ''}`;
+
+        let itemsBadges = '';
+        if (items.length > 0) {
+            itemsBadges = `<div class="items-container">${items.map(it => `<div class="item-badge-mini">${ITEMS[it].icon}</div>`).join('')}</div>`;
+        }
+
+        let crownHtml = isBoss ? `<div class="boss-crown">👑</div>` : '';
+
         el.innerHTML = `
+            ${crownHtml}
             ${catType.icon}
+            ${itemsBadges}
             <div class="hp-container">
                 <span class="hp-text">0/0</span>
                 <div class="hp-bar"><div class="hp-fill"></div></div>
@@ -766,19 +844,34 @@
         `;
         arena.appendChild(el);
 
-        const calculatedHp = Math.round(catType.hp * lvlMult);
-
         activeCats.push({
             el: el,
             hpFill: el.querySelector('.hp-fill'),
             hpText: el.querySelector('.hp-text'),
-            x: arena.clientWidth / 2 + (Math.random() * 80 - 40),
-            y: 60,
-            hp: calculatedHp,
-            maxHp: calculatedHp,
-            dmg: catType.dmg * lvlMult,
-            speed: catType.speed,
-            scale: catType.scale
+            x: arena.clientWidth / 2 + (Math.random() * 60 - 30),
+            y: 50,
+            hp: hp,
+            maxHp: hp,
+            dmg: dmg,
+            speed: speed,
+            scale: (catType.scale) * (isBoss ? 1.6 : 1.0),
+            items: items,
+            isBoss: isBoss,
+            lastAttackTime: 0
+        });
+    }
+
+    function spawnProjectile(x, y, target, dmg, ownerUnit, isCat = false) {
+        const arena = document.getElementById('battle-arena');
+        const el = document.createElement('div');
+        el.className = 'projectile';
+        el.innerText = isCat ? '🏹' : '🎯';
+        arena.appendChild(el);
+
+        activeProjectiles.push({
+            el: el, x: x, y: y,
+            target: target, dmg: dmg,
+            speed: 3.8, ownerUnit: ownerUnit
         });
     }
 
@@ -788,7 +881,6 @@
         document.getElementById('cat-base-hp').style.width = Math.max(0, (catBaseHp / maxCatBaseHp) * 100) + '%';
         document.getElementById('dog-base-hp').style.width = Math.max(0, (dogBaseHp / maxDogBaseHp) * 100) + '%';
 
-        // Обновление полоски прогресса карты (каждые 3 уровня новая карта)
         const currentStageInBiome = ((level - 1) % 3) + 1; 
         const progressPercent = (currentStageInBiome / 3) * 100;
         document.getElementById('map-progress-fill').style.height = progressPercent + '%';
@@ -799,22 +891,37 @@
         const dy = targetY - unit.y;
         const dist = Math.hypot(dx, dy);
 
-        if (dist > 5) {
+        if (dist > 4) {
             unit.x += (dx / dist) * unit.speed;
             unit.y += (dy / dist) * unit.speed;
         }
         return dist;
     }
 
-    /* */
+    function triggerExplosion(x, y, radius, damage, targetArray) {
+        targetArray.forEach(target => {
+            const d = Math.hypot(target.x - x, target.y - y);
+            if (d <= radius) {
+                target.hp -= damage;
+            }
+        });
+    }
+
     function gameLoop() {
         const arena = document.getElementById('battle-arena');
 
         if (isBattlePhase && arena) {
-            const catBaseTarget = { x: arena.clientWidth / 2, y: 30 };
-            const dogBaseTarget = { x: arena.clientWidth / 2, y: arena.clientHeight - 30 };
+            const catBaseTarget = { x: arena.clientWidth / 2, y: 25 };
+            const dogBaseTarget = { x: arena.clientWidth / 2, y: arena.clientHeight - 25 };
+            const now = Date.now();
 
-            // ЛОГИКА СОБАК
+            // Появление Босса, когда у базы кошек остаётся <= 50% HP
+            if (!bossSpawned && catBaseHp <= maxCatBaseHp * 0.5) {
+                bossSpawned = true;
+                spawnCat(true);
+            }
+
+            // 1. ЛОГИКА СОБАК
             activeDogs.forEach(dog => {
                 let nearestCat = null;
                 let minDist = 9999;
@@ -827,16 +934,37 @@
                     }
                 });
 
-                if (nearestCat && minDist < 180) {
-                    if (minDist < 30) {
-                        nearestCat.hp -= dog.dmg * 0.03;
+                const isRanged = dog.items.includes('bow');
+                const attackRange = isRanged ? ITEMS.bow.range : 25;
+
+                if (nearestCat && minDist < (isRanged ? 220 : 150)) {
+                    if (minDist <= attackRange) {
+                        if (isRanged) {
+                            if (now - dog.lastAttackTime > 800) {
+                                spawnProjectile(dog.x, dog.y, nearestCat, dog.dmg, dog, false);
+                                dog.lastAttackTime = now;
+                            }
+                        } else {
+                            const appliedDmg = dog.dmg * 0.03;
+                            nearestCat.hp -= appliedDmg;
+                            if (dog.items.includes('vampire')) {
+                                dog.hp = Math.min(dog.maxHp, dog.hp + appliedDmg * 0.15);
+                            }
+                        }
                     } else {
                         moveTowards(dog, nearestCat.x, nearestCat.y);
                     }
                 } else {
                     const distToBase = moveTowards(dog, catBaseTarget.x, catBaseTarget.y);
-                    if (distToBase < 40) {
-                        catBaseHp -= dog.dmg * 0.03;
+                    if (distToBase < (isRanged ? 120 : 35)) {
+                        if (isRanged) {
+                            if (now - dog.lastAttackTime > 800) {
+                                spawnProjectile(dog.x, dog.y, { x: catBaseTarget.x, y: catBaseTarget.y, isBase: true }, dog.dmg, dog, false);
+                                dog.lastAttackTime = now;
+                            }
+                        } else {
+                            catBaseHp -= dog.dmg * 0.03;
+                        }
                     }
                 }
 
@@ -847,7 +975,40 @@
                 dog.hpText.innerText = `${Math.ceil(Math.max(0, dog.hp))}`;
             });
 
-            // ЛОГИКА КОШЕК
+            // 2. ЛОГИКА СТРЕЛ (СНАРЯДОВ)
+            activeProjectiles.forEach(p => {
+                const targetX = p.target.x;
+                const targetY = p.target.y;
+                const dx = targetX - p.x;
+                const dy = targetY - p.y;
+                const dist = Math.hypot(dx, dy);
+
+                if (dist < 8) {
+                    if (p.target.isBase) {
+                        if (p.target.isDogBase) dogBaseHp -= p.dmg;
+                        else catBaseHp -= p.dmg;
+                    } else if (p.target.hp > 0) {
+                        p.target.hp -= p.dmg;
+                        if (p.ownerUnit && p.ownerUnit.items.includes('vampire')) {
+                            p.ownerUnit.hp = Math.min(p.ownerUnit.maxHp, p.ownerUnit.hp + p.dmg * 0.15);
+                        }
+                    }
+                    p.hit = true;
+                } else {
+                    p.x += (dx / dist) * p.speed;
+                    p.y += (dy / dist) * p.speed;
+                }
+
+                p.el.style.left = p.x + 'px';
+                p.el.style.top = p.y + 'px';
+            });
+
+            activeProjectiles = activeProjectiles.filter(p => {
+                if (p.hit) { p.el.remove(); return false; }
+                return true;
+            });
+
+            // 3. ЛОГИКА КОШЕК
             activeCats.forEach(cat => {
                 let nearestDog = null;
                 let minDist = 9999;
@@ -860,16 +1021,37 @@
                     }
                 });
 
-                if (nearestDog && minDist < 180) {
-                    if (minDist < 30) {
-                        nearestDog.hp -= cat.dmg * 0.03;
+                const isRanged = cat.items.includes('bow');
+                const attackRange = isRanged ? ITEMS.bow.range : 25;
+
+                if (nearestDog && minDist < (isRanged ? 220 : 150)) {
+                    if (minDist <= attackRange) {
+                        if (isRanged) {
+                            if (now - cat.lastAttackTime > 800) {
+                                spawnProjectile(cat.x, cat.y, nearestDog, cat.dmg, cat, true);
+                                cat.lastAttackTime = now;
+                            }
+                        } else {
+                            const appliedDmg = cat.dmg * 0.03;
+                            nearestDog.hp -= appliedDmg;
+                            if (cat.items.includes('vampire')) {
+                                cat.hp = Math.min(cat.maxHp, cat.hp + appliedDmg * 0.15);
+                            }
+                        }
                     } else {
                         moveTowards(cat, nearestDog.x, nearestDog.y);
                     }
                 } else {
                     const distToBase = moveTowards(cat, dogBaseTarget.x, dogBaseTarget.y);
-                    if (distToBase < 40) {
-                        dogBaseHp -= cat.dmg * 0.03;
+                    if (distToBase < (isRanged ? 120 : 35)) {
+                        if (isRanged) {
+                            if (now - cat.lastAttackTime > 800) {
+                                spawnProjectile(cat.x, cat.y, { x: dogBaseTarget.x, y: dogBaseTarget.y, isBase: true, isDogBase: true }, cat.dmg, cat, true);
+                                cat.lastAttackTime = now;
+                            }
+                        } else {
+                            dogBaseHp -= cat.dmg * 0.03;
+                        }
                     }
                 }
 
@@ -880,30 +1062,36 @@
                 cat.hpText.innerText = `${Math.ceil(Math.max(0, cat.hp))}`;
             });
 
-            // Удаление погибших
+            // Очистка погибших собак
             activeDogs = activeDogs.filter(d => {
-                if (d.hp <= 0) { d.el.remove(); return false; }
+                if (d.hp <= 0) {
+                    if (d.items.includes('bomb')) triggerExplosion(d.x, d.y, 80, 150, activeCats);
+                    d.el.remove();
+                    return false;
+                }
                 return true;
             });
 
+            // Очистка погибших кошек
             activeCats = activeCats.filter(c => {
                 if (c.hp <= 0) {
-                    coins += 35;
+                    if (c.items.includes('bomb')) triggerExplosion(c.x, c.y, 80, 150, activeDogs);
+                    coins += c.isBoss ? 150 : 35;
                     c.el.remove();
                     return false;
                 }
                 return true;
             });
 
-            // Победа/поражение
+            // ПРОВЕРКА УСЛОВИЙ ПОБЕДЫ/ПОРАЖЕНИЯ
             if (catBaseHp <= 0) {
-                const reward = 200 + level * 50;
-                alert(`🎉 ПОБЕДА! База кошек уровня ${level} разрушена!\nНаграда: +${reward} 🐾`);
+                const reward = 250 + level * 60;
+                alert(`🎉 ПОБЕДА! База кошек уровня ${level} и Босс повержены!\nНаграда: +${reward} 🐾`);
                 coins += reward;
                 level++;
                 endBattlePhase();
             } else if (dogBaseHp <= 0) {
-                alert(`💥 ПОРАЖЕНИЕ на уровне ${level}! Объедините больше собак для победы.`);
+                alert(`💥 ПОРАЖЕНИЕ на уровне ${level}! Снарядите собак несколькими предметами и попробуйте снова.`);
                 endBattlePhase();
             }
 
